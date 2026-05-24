@@ -22,25 +22,35 @@ The lab required building a full sniff-and-spoof pipeline that intercepts ICMP E
 Captured ICMP traffic using Scapy's `sniff()` with a BPF filter.  
 Demonstrated that root privileges are required for Raw Socket access — running without `sudo` raises `PermissionError: [Errno 1] Operation not permitted`.
 
+![](assets/screenshot-06.png)
+
 ### Task 1.1B — Writing BPF Filters
 Wrote BPF filter expressions to capture:
 - ICMP packets between two specific hosts
 - TCP packets destined for ports 10–100 (Telnet range)
 - All traffic from a specific subnet (128.230.0.0/16 CIDR)
 
+![](assets/screenshot-12.png)
+
 ### Task 1.2 — Spoofing ICMP Packets
 Built a Python/Scapy spoofer that sends ICMP Echo Requests with a forged source IP (1.2.3.4 → 8.8.8.8).  
 Verified in Wireshark: source field shows the fake IP, Google replies to it.
+
+![](assets/screenshot-17.png)
 
 ### Task 1.3 — Custom Traceroute
 Implemented Traceroute from scratch by sending ICMP packets with incrementing TTL values (1, 2, 3…).  
 Each router that drops the packet returns ICMP Time Exceeded (Type 11).  
 Reached 8.8.8.8 at TTL=15, confirming 15 hops total.
 
+![](assets/screenshot-25.png)
+
 ### Task 1.4 — Sniff-and-Spoof (Combined Attack)
 Set up three VMs: Client (A), Attacker (B), Server (C).  
 Attacker listens for any ICMP Echo Request from Client, then immediately injects a forged Echo Reply claiming to come from any target IP — even unreachable ones (e.g. 1.2.3.4).  
 Client receives `64 bytes from 1.2.3.4` and believes the host is reachable.
+
+![](assets/screenshot-35.png)
 
 ### Task 2.1A — C Sniffer with libpcap
 Wrote a C program using `pcap_open_live()`, `pcap_compile()`, `pcap_setfilter()`, and `pcap_loop()`.  
@@ -51,20 +61,28 @@ The callback function (`got_packet`) manually casts the raw buffer to Ethernet, 
 - Promiscuous mode (flag=1): captures ALL frames on the wire, not just those addressed to this MAC
 - Without promiscuous mode a switch-connected host only sees its own traffic
 
+![](assets/screenshot-44.png)
+
 ### Task 2.1B — BPF Filters in C
 Implemented two filters in C:
 1. `icmp and host 10.0.2.6 and host 8.8.8.8` — bidirectional ICMP between two hosts
 2. `tcp and dst portrange 10-100` — TCP Telnet traffic capture
+
+![](assets/screenshot-50.png)
 
 ### Task 2.1C — Telnet Password Sniffing
 Extended the C sniffer to extract TCP payload bytes.  
 Manual pointer arithmetic: `buffer + sizeof(EthernetHeader) + (ip->ihl * 4) + (tcp->doff * 4)`.  
 Successfully captured keystrokes from a Telnet session character-by-character: `p`, `a`, `s`, `s`, `w`, `o`, `r`, `d`, `1`, `2`, `3`, `3`.
 
+![](assets/screenshot-57.png)
+
 ### Task 2.2A — UDP Spoofer in C (Raw Sockets)
 Created a Raw Socket with `IPPROTO_RAW`, manually filled `struct ip` and `struct udphdr`.  
 Used `htons()` and `inet_addr()` for correct byte-order conversion (Host → Network / Little Endian → Big Endian).  
 Wireshark confirmed: source 1.2.3.4, destination 8.8.8.8, port 9999→9090, payload "Spoofed UDP Packet!".
+
+![](assets/screenshot-62.png)
 
 ### Task 2.2B — ICMP Echo Request Spoofer in C
 Added correct ICMP Checksum calculation via `in_cksum()`.  
@@ -75,10 +93,14 @@ Wireshark showed valid ICMP Echo (ping) request with forged source.
 - With `IPPROTO_RAW`: kernel fills IP Checksum automatically, but ICMP checksum must be computed manually
 - Root is required because Raw Sockets allow bypassing kernel TCP/IP stack — enabling spoofing and DoS
 
+![](assets/screenshot-67.png)
+
 ### Task 2.3 — Sniff-and-Spoof in C
 Combined libpcap sniffing + Raw Socket spoofing in a single C program.  
 On every incoming ICMP Echo Request: extracts ID, Sequence, and Payload, then builds and sends a forged Echo Reply.  
 Client VM: `ping 1.2.3.4` receives replies from a non-existent host — confirms the attack is working.
+
+![](assets/screenshot-73.png)
 
 ---
 
@@ -91,11 +113,6 @@ Client VM: `ping 1.2.3.4` receives replies from a non-existent host — confirms
 ---
 
 ## Screenshots
-
-| | | |
-|---|---|---|
-| ![](assets/screenshot-10.png) | ![](assets/screenshot-25.png) | ![](assets/screenshot-40.png) |
-| ![](assets/screenshot-55.png) | ![](assets/screenshot-65.png) | ![](assets/screenshot-75.png) |
 
 <details>
 <summary>View all screenshots (75 images)</summary>

@@ -40,6 +40,8 @@ Even without a prior ARP entry, Client A accepted and cached the mapping.
 
 **Key insight:** ARP has no authentication — a host accepts any IP-to-MAC claim without verifying it.
 
+![](assets/screenshot-05.png)
+
 ### Task 1B — Spoofed ARP Reply (op=2)
 
 Sent a targeted ARP Reply directly to Client A.  
@@ -49,6 +51,8 @@ Once the system is actively waiting for a reply, it blindly trusts our spoofed r
 
 **Result:** `10.0.2.8 → 08:00:27:36:98:8e` ✅
 
+![](assets/screenshot-10.png)
+
 ### Task 1C — Gratuitous ARP (Broadcast)
 
 A Gratuitous ARP is a special Request where `src IP == dst IP` and Ethernet destination is `ff:ff:ff:ff:ff:ff` (broadcast).  
@@ -57,6 +61,8 @@ Normally used to announce IP changes — here used maliciously.
 **One packet simultaneously poisons ALL hosts on the subnet.**
 
 **Result:** `10.0.2.8 → 08:00:27:36:98:8e` ✅
+
+![](assets/screenshot-15.png)
 
 ---
 
@@ -76,6 +82,8 @@ With `net.ipv4.ip_forward=0`, packets arrive at Attacker but are dropped.
 Client A: `127 packets transmitted, 0 received, 100% packet loss`.  
 Wireshark on Attacker confirms packets arrive but shows `[No response seen]`.
 
+![](assets/screenshot-22.png)
+
 ### Step 3: Ping Test — IP Forwarding ON (forward=1)
 With `net.ipv4.ip_forward=1`, Attacker forwards packets to their real destination.  
 Traffic flows: A → M → B → M → A (fully transparent MITM).  
@@ -93,6 +101,8 @@ Packets from B to A are forwarded unchanged.
 - `"!@#@!"` (special chars) → `"!@#@!"` (unchanged)
 
 Wireshark confirmed Telnet traffic (TCP port 23) passing through Attacker with TCP Spurious Retransmissions visible due to payload modification.
+
+![](assets/screenshot-32.png)
 
 ---
 
@@ -120,6 +130,10 @@ Switched from ARP Reply (op=2) to ARP Request (op=1) — proved more reliable fo
 | `how are you?` | `how are you?` |
 | `bar shalev adrian noam` | `bar shalev AAAAAA noam` |
 | `my name is adrian` | `my name is AAAAAA` |
+
+![](assets/screenshot-42.png)
+
+![](assets/screenshot-47.png)
 
 ---
 
@@ -154,11 +168,6 @@ Combined with `ettercap` or Wireshark, a complete passive MITM is achievable in 
 
 ## Screenshots
 
-| | | |
-|---|---|---|
-| ![](assets/screenshot-08.png) | ![](assets/screenshot-18.png) | ![](assets/screenshot-28.png) |
-| ![](assets/screenshot-35.png) | ![](assets/screenshot-40.png) | ![](assets/screenshot-47.png) |
-
 <details>
 <summary>View all screenshots (47 images)</summary>
 
@@ -173,8 +182,8 @@ Combined with `ettercap` or Wireshark, a complete passive MITM is achievable in 
 | ![](assets/screenshot-19.png) | ![](assets/screenshot-20.png) | ![](assets/screenshot-21.png) |
 | ![](assets/screenshot-22.png) | ![](assets/screenshot-23.png) | ![](assets/screenshot-24.png) |
 | ![](assets/screenshot-25.png) | ![](assets/screenshot-26.png) | ![](assets/screenshot-27.png) |
-| ![](assets/screenshot-28.png) | ![](assets/screenshot-29.png) | ![](assets/screenshot-30.png) |
-| ![](assets/screenshot-31.png) | ![](assets/screenshot-32.png) | ![](assets/screenshot-33.png) |
+| ![](assets/screenshot-28.jpg) | ![](assets/screenshot-29.jpg) | ![](assets/screenshot-30.jpg) |
+| ![](assets/screenshot-31.jpg) | ![](assets/screenshot-32.png) | ![](assets/screenshot-33.png) |
 | ![](assets/screenshot-34.png) | ![](assets/screenshot-35.png) | ![](assets/screenshot-36.png) |
 | ![](assets/screenshot-37.png) | ![](assets/screenshot-38.png) | ![](assets/screenshot-39.png) |
 | ![](assets/screenshot-40.png) | ![](assets/screenshot-41.png) | ![](assets/screenshot-42.png) |

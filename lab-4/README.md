@@ -60,6 +60,8 @@ Zone file defines NS records pointing `example.com` queries toward `ns.adrian.co
 Poison Apollo's cache so that `example.com`'s NS record points to `ns.adrian.com` (attacker's server).  
 Any future query for `*.example.com` will then be answered by the attacker.
 
+![](assets/screenshot-15.png)
+
 ---
 
 ## Task 4 — The Kaminsky Attack
@@ -101,6 +103,8 @@ for txid in range(0, 65536):
     ))
 ```
 
+![](assets/screenshot-25.png)
+
 ### Results
 
 After running the attack:
@@ -114,6 +118,8 @@ example.com.   NS   ns.adrian.com.
 
 Apollo's cache was successfully poisoned — every future query for `*.example.com` is now answered by the attacker's nameserver.
 
+![](assets/screenshot-35.png)
+
 ---
 
 ## Why the Fixed Port Matters
@@ -125,6 +131,8 @@ With **randomized source ports** (default BIND9 behavior), the effective entropy
 The number of required guesses increases to ~4 billion — requiring hours or days per poisoning attempt, making the attack impractical in real-world conditions.
 
 This is why **source port randomization** (RFC 5452) was the primary mitigation before DNSSEC adoption.
+
+![](assets/screenshot-42.png)
 
 ---
 
@@ -149,27 +157,24 @@ Emergency patches were released coordinated across all major vendors in a single
 - **Coordinated disclosure research:** Reviewed the 2008 Kaminsky disclosure process as a case study in responsible disclosure and multi-vendor patching
 - **DNSSEC implementation:** Configured DNSSEC signing for `example.com` zone to verify that a properly signed zone defeats the Kaminsky Attack completely — Apollo rejected our spoofed responses even with matching Transaction IDs
 
+![](assets/screenshot-47.png)
+
 ---
 
 ## Screenshots
-
-| | | |
-|---|---|---|
-| ![](assets/screenshot-08.png) | ![](assets/screenshot-20.png) | ![](assets/screenshot-30.png) |
-| ![](assets/screenshot-38.png) | ![](assets/screenshot-43.png) | ![](assets/screenshot-47.png) |
 
 <details>
 <summary>View all screenshots (47 images)</summary>
 
 | | | |
 |---|---|---|
-| ![](assets/screenshot-01.jpg) | ![](assets/screenshot-02.jpg) | ![](assets/screenshot-03.jpg) |
-| ![](assets/screenshot-04.jpg) | ![](assets/screenshot-05.jpg) | ![](assets/screenshot-06.jpg) |
-| ![](assets/screenshot-07.jpg) | ![](assets/screenshot-08.jpg) | ![](assets/screenshot-09.jpg) |
-| ![](assets/screenshot-10.jpg) | ![](assets/screenshot-11.jpg) | ![](assets/screenshot-12.jpg) |
-| ![](assets/screenshot-13.jpg) | ![](assets/screenshot-14.jpg) | ![](assets/screenshot-15.jpg) |
-| ![](assets/screenshot-16.jpg) | ![](assets/screenshot-17.jpg) | ![](assets/screenshot-18.jpg) |
-| ![](assets/screenshot-19.jpg) | ![](assets/screenshot-20.png) | ![](assets/screenshot-21.png) |
+| ![](assets/screenshot-01.jpg) | ![](assets/screenshot-02.png) | ![](assets/screenshot-03.jpeg) |
+| ![](assets/screenshot-04.png) | ![](assets/screenshot-05.png) | ![](assets/screenshot-06.png) |
+| ![](assets/screenshot-07.png) | ![](assets/screenshot-08.png) | ![](assets/screenshot-09.png) |
+| ![](assets/screenshot-10.png) | ![](assets/screenshot-11.png) | ![](assets/screenshot-12.png) |
+| ![](assets/screenshot-13.png) | ![](assets/screenshot-14.png) | ![](assets/screenshot-15.png) |
+| ![](assets/screenshot-16.png) | ![](assets/screenshot-17.png) | ![](assets/screenshot-18.png) |
+| ![](assets/screenshot-19.png) | ![](assets/screenshot-20.png) | ![](assets/screenshot-21.png) |
 | ![](assets/screenshot-22.png) | ![](assets/screenshot-23.png) | ![](assets/screenshot-24.png) |
 | ![](assets/screenshot-25.png) | ![](assets/screenshot-26.png) | ![](assets/screenshot-27.png) |
 | ![](assets/screenshot-28.png) | ![](assets/screenshot-29.png) | ![](assets/screenshot-30.png) |

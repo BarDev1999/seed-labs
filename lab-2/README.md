@@ -40,6 +40,8 @@ Server (Netcat `nc -lu 9090`) successfully received and reassembled the full 96-
 
 **Challenge solved:** Scapy does not automatically recompute UDP Checksum after manual fragmentation — set `pkt[UDP].cheksum = 0` to force recalculation.
 
+![](assets/screenshot-07.png)
+
 ---
 
 ## Task 1b — Overlapping IP Fragments
@@ -64,6 +66,8 @@ This behavior was historically exploited in the **Teardrop attack** to crash vul
 
 **Security implication:** IDS/firewall evasion — an attacker can split a malicious payload across overlapping fragments where the first innocent-looking fragment passes inspection, and the malicious second fragment overwrites it on the end host (or vice versa, depending on OS reassembly policy).
 
+![](assets/screenshot-16.png)
+
 ---
 
 ## Task 1c — Ping of Death
@@ -82,6 +86,8 @@ Wireshark confirmed: Fragment Offset 65,528, Flags 0x00, 100-byte payload — pa
 
 **Note:** While modern kernels are protected, this attack was responsible for crashing Windows 95/NT and early Linux kernels in the late 1990s.
 
+![](assets/screenshot-22.png)
+
 ---
 
 ## Task 1d — Fragment Flood DoS
@@ -99,6 +105,8 @@ Monitored: `watch -n 1 'netstat -s | grep -i reasm'`
 
 Result: 497 reassembly failures observed. Client ping showed 0% packet loss initially, rising as the queue filled. ✅
 
+![](assets/screenshot-30.png)
+
 ### Implementation B — C / Raw Sockets (5 Terminals)
 Rewrote the attack in C using Raw Sockets for higher throughput than Python/Scapy can achieve.  
 Launched 5 parallel terminal instances simultaneously.
@@ -111,6 +119,8 @@ Launched 5 parallel terminal instances simultaneously.
 **Key difference between Python and C implementations:**  
 Python/Scapy: easier to write, lower packet rate (Python overhead)  
 C/Raw Sockets: significantly higher packet rate, directly fills reassembly queue faster
+
+![](assets/screenshot-37.png)
 
 ---
 
@@ -142,6 +152,8 @@ No — Linux performs a Sanity Check: the redirected gateway must be on the same
 **Q: Can you redirect to a non-existent local machine (10.0.2.99)?**  
 The redirect is accepted into the routing cache, but packets are then dropped because ARP cannot resolve 10.0.2.99's MAC address → the attack functions as a DoS rather than MITM.
 
+![](assets/screenshot-45.png)
+
 ---
 
 ## Tasks 3a/3b — Network and Routing Setup (Multi-Subnet)
@@ -157,6 +169,8 @@ Steps:
 4. Added static routes on both Client and Server: `ip route add <subnet> via <next-hop>`
 
 **Result:** `ping 192.168.60.5` from Attacker: 4 packets, 0% loss. ✅
+
+![](assets/screenshot-50.png)
 
 ---
 
@@ -178,6 +192,8 @@ With this route present, Loose RPF accepted packets with spoofed source IP 192.1
 
 **Conclusion:** Strict RPF is a strong defense against LAN-local spoofing. Loose RPF adds flexibility for multi-homed hosts but is far weaker. Neither protects against IP-in-IP encapsulation.
 
+![](assets/screenshot-55.png)
+
 ---
 
 ## Beyond Requirements
@@ -189,11 +205,6 @@ With this route present, Loose RPF accepted packets with spoofed source IP 192.1
 ---
 
 ## Screenshots
-
-| | | |
-|---|---|---|
-| ![](assets/screenshot-08.png) | ![](assets/screenshot-20.png) | ![](assets/screenshot-32.png) |
-| ![](assets/screenshot-42.png) | ![](assets/screenshot-50.png) | ![](assets/screenshot-55.png) |
 
 <details>
 <summary>View all screenshots (55 images)</summary>

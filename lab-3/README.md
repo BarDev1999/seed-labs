@@ -44,6 +44,8 @@ Configured BIND9 as **Authoritative** for `example.com` by creating a Zone File.
 - Answer: `10.0.2.20`
 - Query time: 2ms (served locally, no external lookup)
 
+![](assets/screenshot-08.png)
+
 ---
 
 ## Task 4 — Hosts File Poisoning
@@ -62,6 +64,8 @@ An attacker with local access can silently redirect any domain.
 - **Key insight:** `ping`, `curl`, browsers use `getaddrinfo()` (which checks hosts first). `dig` queries DNS directly.
 
 **Implication:** With root access on a compromised machine, an attacker can silently redirect any domain for all normal applications without touching DNS at all.
+
+![](assets/screenshot-14.png)
 
 ---
 
@@ -89,6 +93,8 @@ An attacker with local access can silently redirect any domain.
 - Real DNS server (10.0.2.20) also responded, but our spoofed response arrived first
 - Wireshark on Client confirmed: two responses received, Client accepted the first one
 
+![](assets/screenshot-22.png)
+
 ---
 
 ## Task 6 — DNS Cache Poisoning
@@ -115,6 +121,8 @@ www.example.net.   259000  A   10.0.2.100
 ```
 Cache poisoned ✅ — all clients using Apollo will now receive the fake IP for 3 days without further attack.
 
+![](assets/screenshot-30.png)
+
 ---
 
 ## Task 7 — Authority Section Poisoning
@@ -137,6 +145,8 @@ Authority poisoned ✅ — Apollo now routes ALL queries for `*.example.net` thr
 
 **Bailiwick Check:** BIND9 enforces the Bailiwick Rule — it only accepts Authority records for domains within the same namespace as the query.  
 Since the query was for `example.net`, an Authority record for `example.net` is within scope (in-Bailiwick) and accepted.
+
+![](assets/screenshot-36.png)
 
 ---
 
@@ -169,6 +179,8 @@ Successfully bypassed Bailiwick by making BIND9 ask our server for `google.com`.
 
 **Root cause:** Once our NS is accepted for `example.net`, any response from `attacker32.com` is treated as authoritative for its own namespace — including `google.com` if we structure the queries correctly.
 
+![](assets/screenshot-43.png)
+
 ---
 
 ## Task 9 — Additional Section Attack
@@ -185,6 +197,8 @@ Spoofed reply for `www.example.net` with 3 Additional records:
 **Confirmed in dump.db:** Only `ns.example.net` (the glue record for the in-Bailiwick nameserver) was cached.
 
 **AAAA/IPv6 Race Condition bypass:** BIND9 makes simultaneous IPv4 (A) and IPv6 (AAAA) queries. Filtering only on `qtype == 1` (IPv4 A record) in the script prevented the AAAA query from triggering a separate race and interfering with our poisoning timing.
+
+![](assets/screenshot-48.png)
 
 ---
 
@@ -216,11 +230,6 @@ The attack hierarchy:
 ---
 
 ## Screenshots
-
-| | | |
-|---|---|---|
-| ![](assets/screenshot-08.png) | ![](assets/screenshot-18.png) | ![](assets/screenshot-28.png) |
-| ![](assets/screenshot-36.png) | ![](assets/screenshot-42.png) | ![](assets/screenshot-48.png) |
 
 <details>
 <summary>View all screenshots (48 images)</summary>
