@@ -217,6 +217,11 @@ The attack hierarchy:
 
 ## Screenshots
 
+| | | |
+|---|---|---|
+| ![](assets/screenshot-08.png) | ![](assets/screenshot-18.png) | ![](assets/screenshot-28.png) |
+| ![](assets/screenshot-36.png) | ![](assets/screenshot-42.png) | ![](assets/screenshot-48.png) |
+
 <details>
 <summary>View all screenshots (48 images)</summary>
 

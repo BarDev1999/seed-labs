@@ -153,6 +153,11 @@ Emergency patches were released coordinated across all major vendors in a single
 
 ## Screenshots
 
+| | | |
+|---|---|---|
+| ![](assets/screenshot-08.png) | ![](assets/screenshot-20.png) | ![](assets/screenshot-30.png) |
+| ![](assets/screenshot-38.png) | ![](assets/screenshot-43.png) | ![](assets/screenshot-47.png) |
+
 <details>
 <summary>View all screenshots (47 images)</summary>
 

@@ -190,6 +190,11 @@ With this route present, Loose RPF accepted packets with spoofed source IP 192.1
 
 ## Screenshots
 
+| | | |
+|---|---|---|
+| ![](assets/screenshot-08.png) | ![](assets/screenshot-20.png) | ![](assets/screenshot-32.png) |
+| ![](assets/screenshot-42.png) | ![](assets/screenshot-50.png) | ![](assets/screenshot-55.png) |
+
 <details>
 <summary>View all screenshots (55 images)</summary>
 

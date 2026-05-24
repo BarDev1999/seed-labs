@@ -92,6 +92,11 @@ Client VM: `ping 1.2.3.4` receives replies from a non-existent host — confirms
 
 ## Screenshots
 
+| | | |
+|---|---|---|
+| ![](assets/screenshot-10.png) | ![](assets/screenshot-25.png) | ![](assets/screenshot-40.png) |
+| ![](assets/screenshot-55.png) | ![](assets/screenshot-65.png) | ![](assets/screenshot-75.png) |
+
 <details>
 <summary>View all screenshots (75 images)</summary>
 

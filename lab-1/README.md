@@ -154,6 +154,11 @@ Combined with `ettercap` or Wireshark, a complete passive MITM is achievable in 
 
 ## Screenshots
 
+| | | |
+|---|---|---|
+| ![](assets/screenshot-08.png) | ![](assets/screenshot-18.png) | ![](assets/screenshot-28.png) |
+| ![](assets/screenshot-35.png) | ![](assets/screenshot-40.png) | ![](assets/screenshot-47.png) |
+
 <details>
 <summary>View all screenshots (47 images)</summary>
 
