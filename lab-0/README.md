@@ -1,7 +1,27 @@
 # Lab 0: Packet Sniffing and Spoofing
 
-**SEED Labs — Network Security Laboratory**
-**Team:** Bar Sberro (314683665) · Shalev Cohen (314745456) · Noam Hadad (3147014118)
+**SEED Labs : Network Security Laboratory**
+**Team:** Bar Sberro · Shalev Cohen · Noam Hadad
+
+[← Index](../README.md) | [Lab 1 →](../lab-1/README.md)
+
+---
+
+## Contents
+
+1. [Network Topology](#network-topology)
+2. [Task 1.1A : Packet Sniffing with Scapy (Python)](#task-11a-packet-sniffing-with-scapy-python)
+3. [Task 1.1B : BPF Packet Filtering](#task-11b-bpf-packet-filtering)
+4. [Task 1.2 : ICMP Packet Spoofing](#task-12-icmp-packet-spoofing)
+5. [Task 1.3 : Traceroute Implementation](#task-13-traceroute-implementation)
+6. [Task 1.4 : Sniff and Spoof](#task-14-sniff-and-spoof)
+7. [Task 2.1A : C Level Sniffer using libpcap](#task-21a-c-level-sniffer-using-libpcap)
+8. [Task 2.1B : BPF Filters in C](#task-21b-bpf-filters-in-c)
+9. [Task 2.1C : Sniffing Telnet Passwords in C](#task-21c-sniffing-telnet-passwords-in-c)
+10. [Task 2.2A : Raw Socket UDP Spoofing in C](#task-22a-raw-socket-udp-spoofing-in-c)
+11. [Task 2.2B : Raw Socket ICMP Spoofing in C](#task-22b-raw-socket-icmp-spoofing-in-c)
+12. [Task 2.3 : Sniff and Spoof in C](#task-23-sniff-and-spoof-in-c)
+13. [Lab Summary](#lab-summary)
 
 ---
 
@@ -33,21 +53,27 @@ The sniffer script uses Scapy's `sniff()` function with an `icmp` filter and a c
 
 ### Execution
 
-**Run 1 — With Root privileges:**
+**Run 1 : With Root privileges:**
 
-The sniffer was started under `sudo`, then `ping 8.8.8.8` was run in a second terminal to generate ICMP traffic. Scapy's `sniff()` function correctly captured and displayed the packet details.
+The sniffer was started under `sudo`, then `ping 8.8.8.8` was run in a second terminal to generate ICMP traffic.
+
+![Sniffer launched with sudo on enp0s3 (top terminal "Waiting for packets..."), ping 8.8.8.8 prepared in bottom terminal](assets/screenshot-05.png)
+
+![Ping output: 64 byte ICMP Echo Replies from 8.8.8.8 with TTL=109, RTTs around 30 to 51 ms](assets/screenshot-06.png)
+
+Scapy's `sniff()` function correctly captured and displayed each packet's Ethernet / IP / ICMP fields:
+
+![Sniffer parsed output: Ethernet (dst, src, type=IPv4), IP (id=44384, src=10.0.2.6, dst=8.8.8.8, proto=icmp), ICMP (type=echo-request, code=0)](assets/screenshot-07.png)
 
 ![Sniffer running with root: ICMP packets captured and printed in real time](assets/screenshot-12.png)
 
-**Run 2 — Without Root privileges:**
+**Run 2 : Without Root privileges:**
 
-Running `./sniffer.py` without `sudo` causes the program to crash immediately with:
+Running `./sniffer.py` without `sudo` causes the program to crash immediately with `PermissionError: [Errno 1] Operation not permitted`:
 
-```
-PermissionError: [Errno 1] Operation not permitted
-```
+![Python traceback: PermissionError raised inside Scapy's sendrecv pathway when opening socket.SOCK_RAW without root](assets/screenshot-08.png)
 
-This failure occurs precisely when Scapy attempts to open a Raw Socket (`socket.SOCK_RAW`). Linux protects network interfaces from unprivileged access — both Packet Sniffing and Spoofing require root.
+This failure occurs precisely when Scapy attempts to open a Raw Socket (`socket.SOCK_RAW`). Linux protects network interfaces from unprivileged access; both Packet Sniffing and Spoofing require root.
 
 ### Summary
 
@@ -70,6 +96,10 @@ The sniffer was updated with filter string: `tcp and src host 10.0.2.6 and dst p
 ![Sniffer code with TCP/port-23 BPF filter applied](assets/screenshot-13.png)
 
 Two terminals were opened: the top one ran the sniffer, the bottom one ran `telnet 8.8.8.8 23` to generate matching traffic.
+
+![Sniffer ready on top terminal "Starting Sniffer on enp0s3... Waiting for packets..."; bottom terminal prepared to issue telnet 8.8.8.8 23](assets/screenshot-10.png)
+
+![Telnet command issued: "Trying 8.8.8.8..." while sniffer waits to match the BPF filter](assets/screenshot-11.png)
 
 ![Terminal showing sniffer ready and telnet command being issued](assets/screenshot-14.png)
 
@@ -191,6 +221,7 @@ The Client believed `1.2.3.4` was alive and responding, entirely due to the forg
 
 ![Attacker terminal: script detecting each Echo Request from 10.0.2.7 to 1.2.3.4 and sending spoofed Echo Replies](assets/screenshot-33.png)
 
+> [!TIP]
 > **Problem solved:** In the first attempt, both the ping and the sniffer ran on the same VM. Linux's internal routing detected the anomaly (receiving a packet with a spoofed source destined to itself) and dropped it. The solution was to separate the attacker and client onto two different VMs so the packet crosses the LAN segment and is received naturally.
 
 ### Summary

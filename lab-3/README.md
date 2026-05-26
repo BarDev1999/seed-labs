@@ -1,7 +1,23 @@
 # Lab 3: Local DNS Attacks
 
-**SEED Labs — Network Security Laboratory**
-**Team:** Bar Sberro (314683665) · Shalev Cohen (314745456) · Noam Hadad (3147014118)
+**SEED Labs : Network Security Laboratory**
+**Team:** Bar Sberro · Shalev Cohen · Noam Hadad
+
+[← Lab 2](../lab-2/README.md) | [Index](../README.md) | [Lab 4 →](../lab-4/README.md)
+
+---
+
+## Contents
+
+1. [Network Topology](#network-topology)
+2. [Tasks 1 to 3 : Environment Setup and Local DNS Configuration](#tasks-13-environment-setup-and-local-dns-configuration)
+3. [Task 4 : Hosts File Poisoning](#task-4-hosts-file-poisoning)
+4. [Task 5 : Direct DNS Spoofing](#task-5-direct-dns-spoofing-sniff-and-respond)
+5. [Task 6 : DNS Cache Poisoning Attack](#task-6-dns-cache-poisoning-attack)
+6. [Task 7 : Targeting the Authority Section](#task-7-targeting-the-authority-section)
+7. [Task 8 : Bailiwick Rule and Decoupled Poisoning](#task-8-bailiwick-rule-and-decoupled-poisoning-beyond-requirements)
+8. [Task 9 : Targeting the Additional Section](#task-9-targeting-the-additional-section)
+9. [Lab Summary](#lab-summary)
 
 ---
 
@@ -35,7 +51,8 @@ The Client's `/etc/resolv.conf` was updated to point to the local DNS server.
 
 The output confirms the Client directs all DNS queries to `10.0.2.20` — not an external resolver.
 
-> **Pitfall:** `/etc/resolv.conf` is auto-managed by `resolvconf` on Ubuntu. Direct edits are overwritten on reboot. The correct approach is to configure the interface's DNS settings and use `resolvconf` to regenerate the file, or to edit the head template (`/etc/resolvconf/resolv.conf.d/head`).
+> [!WARNING]
+> **Pitfall:** `/etc/resolv.conf` is auto managed by `resolvconf` on Ubuntu. Direct edits are overwritten on reboot. The correct approach is to configure the interface's DNS settings and use `resolvconf` to regenerate the file, or to edit the head template (`/etc/resolvconf/resolv.conf.d/head`).
 
 ### Task 2: Test Recursive Resolution — External Query
 
@@ -176,14 +193,17 @@ Inject a forged A record for `www.example.net` with a 259,000-second TTL into th
 
 The cache dump was extracted from the resolver:
 
-![rndc dumpdb output: www.example.net → 10.0.2.100 with TTL 259000 stored in the resolver's cache](assets/screenshot-21.png)
+![rndc dumpdb output: www.example.net mapped to 10.0.2.100 with TTL 259000 stored in the resolver's cache](assets/screenshot-21.png)
 
-**Step 3:** A Client query verified the poisoned cache was served to end users:
+Cross verification on the Server by reading the on disk BIND cache file directly:
 
-The resolver returned `10.0.2.100` from its cache (query time: near-zero milliseconds — confirming a cache hit, not a fresh internet resolution).
+![Server: cat /var/cache/bind/dump.db | grep example shows "www.example.net 259175 A 10.0.2.100"](assets/screenshot-22.png)
+
+**Step 3:** A Client query verified the poisoned cache was served to end users. The resolver returned `10.0.2.100` from its cache (query time near zero milliseconds, confirming a cache hit rather than a fresh internet resolution).
 
 **Summary:** Cache poisoning is a force multiplier: one successful injection affects all clients behind the resolver for the full TTL duration. The attacker does not need to be on the network again until the TTL expires.
 
+> [!TIP]
 > **Problem solved:** Timing was critical. If the script launched too slowly, the resolver received the legitimate response first and cached it. The `rndc flush` command was used before each attempt to reset the cache and guarantee a clean injection opportunity.
 
 ---
@@ -205,17 +225,30 @@ Replace the NS record for `example.net` in the resolver's cache with `attacker32
 
 ### Execution
 
-A Scapy script was written to inject a forged Authority Section alongside the Answer Section when the resolver queries for `www.example.net`:
+A Scapy script (`task7.py`) was written to inject a forged Authority Section alongside the Answer Section when the resolver queries for `www.example.net`:
 
-![Task7 script: DNSRR Answer for www.example.net (A record → 10.0.2.100), plus DNSRR Authority for example.net (NS → attacker32.com)](assets/screenshot-27.png)
+![task7.py Part 1: TARGET_DOMAIN = www.example.net, ATTACKER_IP = 10.0.2.100, DNS_SERVER_IP = 10.0.2.20, spoof_dns_task7() callback intercepts outbound resolver queries](assets/screenshot-23.png)
+
+![task7.py Part 2: DNS reply assembly with aa=1, qr=1, ancount=1, nscount=1, arcount=0. Answer section contains forged A record; Authority section contains the poisoning NS payload](assets/screenshot-24.png)
+
+![Task7 script: DNSRR Answer for www.example.net (A record mapped to 10.0.2.100), plus DNSRR Authority for example.net (NS mapped to attacker32.com)](assets/screenshot-27.png)
 
 The forged answer contained:
-- **Answer:** `www.example.net` → `10.0.2.100`
-- **Authority:** `example.net NS attacker32.com`
+* **Answer:** `www.example.net` resolves to `10.0.2.100`
+* **Authority:** `example.net NS attacker32.com`
 
-The resolver accepted this response (no Bailiwick Rule violation — `attacker32.com` is inside the `example.net` namespace boundary... actually it is out-of-bailiwick, which is tested further in Task 8).
+> [!NOTE]
+> The phrase "no Bailiwick Rule violation" is only true in a narrow technical sense for this single packet: `attacker32.com` is in fact out of bailiwick relative to `example.net`. The Bailiwick Rule and its bypass are examined directly in Task 8.
 
-The cache dump showed:
+The script was launched on the Attacker, and the Client triggered the attack with a `dig` query:
+
+![Attacker terminal: sudo python3 task7.py, "Task 7 Custom Scapy Script Running..."](assets/screenshot-25.png)
+
+The Client then issued `dig www.example.net`:
+
+![Client: dig www.example.net returns ANSWER www.example.net A 10.0.2.100, TTL 259200, served from the poisoned resolver cache](assets/screenshot-26.png)
+
+The cache dump on the resolver showed:
 
 ```
 example.net   NS   attacker32.com
@@ -314,7 +347,8 @@ Empirically map BIND9's filtering behavior by injecting three Additional records
 
 ![Task 9 script Part 3: packet construction and sending logic](assets/screenshot-43.png)
 
-> **IPv6 Race Condition:** Modern DNS resolvers send simultaneous A (IPv4) and AAAA (IPv6) queries. Without filtering by `qtype==1`, the script might respond to the AAAA query with an IPv4 record — the resolver detects the mismatch and falls back to the real internet answer. The `pkt[DNS].qd.qtype == 1` filter ensures the script only responds to IPv4 queries.
+> [!IMPORTANT]
+> **IPv6 Race Condition:** Modern DNS resolvers send simultaneous A (IPv4) and AAAA (IPv6) queries. Without filtering by `qtype==1`, the script might respond to the AAAA query with an IPv4 record; the resolver detects the mismatch and falls back to the real internet answer. The `pkt[DNS].qd.qtype == 1` filter ensures the script only responds to IPv4 queries.
 
 The script was launched. The Client issued a query for `www.example.net`:
 

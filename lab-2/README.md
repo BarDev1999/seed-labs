@@ -1,7 +1,23 @@
 # Lab 2: IP / ICMP Attacks
 
-**SEED Labs — Network Security Laboratory**
-**Team:** Bar Sberro (314683665) · Shalev Cohen (314745456) · Noam Hadad (3147014118)
+**SEED Labs : Network Security Laboratory**
+**Team:** Bar Sberro · Shalev Cohen · Noam Hadad
+
+[← Lab 1](../lab-1/README.md) | [Index](../README.md) | [Lab 3 →](../lab-3/README.md)
+
+---
+
+## Contents
+
+1. [Network Topology](#network-topology)
+2. [Task 1.a : IP Fragmentation](#task-1a-ip-fragmentation)
+3. [Task 1.b : Overlapping Fragments](#task-1b-ip-fragments-with-overlapping-contents)
+4. [Task 1.c : Ping of Death](#task-1c-ping-of-death)
+5. [Task 1.d : Fragment Flood DoS](#task-1d-fragment-flood-dos)
+6. [Task 2 : ICMP Redirect Attack](#task-2-icmp-redirect-attack)
+7. [Task 3.a and 3.b : Multi Subnet Routing Setup](#task-3a-and-3b-multi-subnet-routing-setup)
+8. [Task 3.c : Reverse Path Filtering (RPF) Bypass Research](#task-3c-reverse-path-filtering-rpf-bypass-research)
+9. [Lab Summary](#lab-summary)
 
 ---
 
@@ -50,7 +66,8 @@ The kernel correctly identified all three fragments as belonging to the same dat
 
 **What was learned?** Fragment offset arithmetic is critical. Scapy's `frag` parameter takes the offset in units of 8 bytes, not raw bytes. The first fragment must have offset 0 and `flags=1` (MF set); intermediate fragments have non-zero offsets and `flags=1`; the final fragment has `flags=0`. The UDP header lives entirely in the first fragment and the kernel reconstructs the full UDP datagram before delivering to the application.
 
-> **Problem encountered:** Scapy auto-recalculates UDP checksums, which invalidates the checksum once the UDP header is split from part of its payload. Setting `pkt[UDP].checksum = 0` before sending instructs the OS to skip checksum validation on receipt, allowing the experiment to proceed correctly.
+> [!TIP]
+> **Problem encountered:** Scapy auto recalculates UDP checksums, which invalidates the checksum once the UDP header is split from part of its payload. Setting `pkt[UDP].checksum = 0` before sending instructs the OS to skip checksum validation on receipt, allowing the experiment to proceed correctly.
 
 ---
 
@@ -70,9 +87,7 @@ Test two overlap scenarios against Ubuntu's kernel:
 
 Fragment A carries 32 bytes of `'A'` at offset 0. Fragment B carries 32 bytes of `'B'` starting at offset 4 (byte 32), overlapping the last 8 bytes of Fragment A's range.
 
-![send_overlap() function: Fragment A (32×'A', offset=0, MF=1), Fragment B (32×'B', offset=4, MF=0) — B's first 8 bytes overlap A's last 8 bytes](assets/screenshot-06.png)
-
-![Same script view with function structure visible](assets/screenshot-06.png)
+![send_overlap() function: Fragment A (32 bytes of 'A', offset=0, MF=1), Fragment B (32 bytes of 'B', offset=4, MF=0). B's first 8 bytes overlap A's last 8 bytes.](assets/screenshot-06.png)
 
 The Server received the reassembled payload:
 
@@ -104,6 +119,7 @@ The Server received the reassembled payload:
 
 This makes the Teardrop attack (which relied on kernel panics from overlapping fragments) ineffective on modern systems. The kernel simply applies its conflict resolution policy and drops conflicting data safely.
 
+> [!TIP]
 > **Problem solved:** Scapy's automatic UDP header recalculation corrupted checksums when fragments were crafted manually. This was resolved by using Python's `struct` module to build a raw UDP header with checksum=0 and embedding it directly into the first fragment's payload, preventing Scapy from modifying the header bytes.
 
 ---
@@ -116,7 +132,7 @@ The maximum legal IPv4 packet size is 65,535 bytes (the IP Total Length field is
 
 ### Objective
 
-Send two fragments: Fragment 1 at offset 0 with MF=1, Fragment 2 at offset 65,528 (byte position 65,528×8 = incorrect — offset 65,528 in units that produce a reconstructed size of 65,628 bytes) with 100 bytes of payload, producing a total reconstructed size of 65,628 bytes — exceeding the 65,535 byte maximum.
+Send two fragments: Fragment 1 with `MF=1` at offset 0, and Fragment 2 with `MF=0` carrying 100 bytes of payload at fragment offset 8191 (8 byte units), which corresponds to byte offset 65,528. The reconstructed datagram size would therefore be 65,628 bytes, exceeding the 65,535 byte IPv4 maximum.
 
 ### Execution
 
@@ -230,7 +246,9 @@ IP forwarding was enabled on the Attacker so the Server does not lose connectivi
 
 ![Attacker: sysctl net.ipv4.ip_forward=1 — Attacker will transparently forward traffic to the real destination](assets/screenshot-30.png)
 
-The Server was already sending legitimate traffic. The attack script was started, with the Server simultaneously pinging `8.8.8.8`:
+The Server was already sending legitimate traffic. The attack script was started on the Attacker, with the Server simultaneously pinging `8.8.8.8`:
+
+![Attacker terminal: sudo python3 icmp_redirect.py launched, "Sniffing traffic from 10.0.2.8 and spoofing ICMP Redirects..."](assets/screenshot-39.png)
 
 ![Attacker script running: detecting Server's ICMP Echo Requests and injecting spoofed Redirect packets](assets/screenshot-31.png)
 
@@ -252,7 +270,11 @@ Attacker terminal confirming Redirect packets were sent:
 
 **Q1: Can an ICMP Redirect point to a remote machine (e.g., 8.8.8.8)?**
 
-![Experiment: sending Redirect with gw=8.8.8.8 — ip route get shows no change, attack failed](assets/screenshot-36.png)
+The script was modified to set `fake_gw_remote = "8.8.8.8"` (a gateway outside the local subnet):
+
+![Script edit: fake_gw_remote = "8.8.8.8", ICMP type=5 code=1 gw=fake_gw_remote, send(pkt)](assets/screenshot-43.png)
+
+![Experiment: sending Redirect with gw=8.8.8.8. ip route get shows no change, attack failed](assets/screenshot-36.png)
 
 ![Server routing table unchanged](assets/screenshot-37.png)
 

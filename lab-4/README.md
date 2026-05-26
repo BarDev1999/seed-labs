@@ -1,7 +1,25 @@
 # Lab 4: Remote DNS Cache Poisoning Attack (Kaminsky Attack)
 
-**SEED Labs — Network Security Laboratory**
-**Team:** Bar Sberro (314683665) · Shalev Cohen (314745456) · Noam Hadad (3147014118)
+**SEED Labs : Network Security Laboratory**
+**Team:** Bar Sberro · Shalev Cohen · Noam Hadad
+
+[← Lab 3](../lab-3/README.md) | [Index](../README.md)
+
+---
+
+> [!IMPORTANT]
+> The Kaminsky attack succeeds in this lab because BIND was deliberately weakened: DNSSEC is disabled and the source port is fixed at 33333. Modern production resolvers use random source ports and DNSSEC validation; against them this exact attack is impractical. The lab demonstrates the underlying mechanism, not a present day exploit.
+
+## Contents
+
+1. [Network Topology](#network-topology)
+2. [Tasks 1 to 3 : Environment Setup](#tasks-1-2-3-environment-setup-local-dns-configuration-and-attacker-dns-setup)
+3. [Task 4 : Construct DNS Request](#task-4-construct-dns-request)
+4. [Task 5 : Spoof DNS Replies](#task-5-spoof-dns-replies)
+5. [Task 6 : Launch the Kaminsky Attack](#task-6-launch-the-kaminsky-attack)
+6. [Task 7 : Result Verification](#task-7-result-verification)
+7. [Beyond : DNSSEC as Defense](#beyond-dnssec-as-defense-against-the-kaminsky-attack)
+8. [Lab Summary](#lab-summary)
 
 ---
 
@@ -136,7 +154,7 @@ This is the trigger packet sent by `Query.py`. Transaction ID `0xaaaa` is the ar
 **This packet reveals the two critical attack parameters:**
 
 - **Source port 33333:** The fixed source port is confirmed in the UDP header. In standard BIND configuration this port would be random in the range ~1024 to 65535 (~64,000 possibilities). With the fixed port, the attacker knows exactly where to send spoofed replies: 10.0.2.20:33333.
-- **Transaction ID (TxID) 0xe546:** Apollo generated a new random Transaction ID (`0xe546`) for its outgoing query, different from the trigger ID (`0xaaaa`). This 16-bit value is the only remaining unknown the attacker must guess. With 65,536 possible values, flooding ~500 spoofed packets per attempt yields a success probability of approximately `P(success) = 500/65536 ≈ 0.76%` per attempt.
+* **Transaction ID (TxID) 0xe546:** Apollo generated a new random Transaction ID (`0xe546`) for its outgoing query, different from the trigger ID (`0xaaaa`). This 16 bit value is the only remaining unknown the attacker must guess. With 65,536 possible values and the 300 reply per trigger flood used in Task 6, the per attempt success probability is `P(success) = 300 / 65,536 ≈ 0.46%`. Because each failed iteration immediately starts a new race using a fresh random subdomain name, the cumulative probability converges rapidly: after N iterations, `P_cum = 1 : (1 : 300/65536)^N`, exceeding 50% in roughly 150 iterations.
 
 ![Wireshark: final answer returning to attacker with original TxID 0xaaaa, SOA record from elliott.ns.cloudflare.com, NXDOMAIN for aaaaa.example.com, Time: 0.319 seconds](assets/screenshot-19.png)
 
