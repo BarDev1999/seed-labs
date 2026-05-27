@@ -3,7 +3,7 @@
 **SEED Labs : Network Security Laboratory**
 **Team:** Bar Sberro · Shalev Cohen · Noam Hadad
 
-[← Lab 3](../lab-3/README.md) | [Index](../README.md)
+[← Lab 3](../lab-3/README.md) | [Index](../README.md) | [Lab 5 →](../lab-5/README.md)
 
 ---
 

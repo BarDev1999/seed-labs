@@ -1,12 +1,12 @@
 # SEED Labs : Network Security Research
 
-![Labs](https://img.shields.io/badge/labs-5%2F5%20complete-success)
+![Labs](https://img.shields.io/badge/labs-6%2F6%20complete-success)
 ![Platform](https://img.shields.io/badge/platform-VirtualBox%20%7C%20Ubuntu%2016.04-blue)
 ![Language](https://img.shields.io/badge/languages-Python%20%7C%20C-yellow)
 ![Tooling](https://img.shields.io/badge/tooling-Scapy%20%7C%20libpcap%20%7C%20BIND9%20%7C%20Wireshark-lightgrey)
 
-> Hands on network security labs from the [SEED (Security Education) Project](https://seedsecuritylabs.org/) curriculum.
-> All five labs completed **above requirements**, with dual Python and C implementations and extended research where applicable.
+> Hands on network security and cryptography labs from the [SEED (Security Education) Project](https://seedsecuritylabs.org/) curriculum.
+> All six labs completed **above requirements**, with dual Python and C implementations and extended research where applicable.
 
 ## Team
 
@@ -25,6 +25,7 @@
 | [Lab 2](./lab-2/) | IP / ICMP Attacks | Scapy · C / Raw Sockets · ICMP · DoS | Complete |
 | [Lab 3](./lab-3/) | Local DNS Attacks | BIND9 · Scapy · Cache Poisoning | Complete |
 | [Lab 4](./lab-4/) | Remote DNS Cache Poisoning (Kaminsky) | BIND9 · C · UDP · DNSSEC | Complete |
+| [Lab 5](./lab-5/) | RSA Public Key Encryption and Signatures | OpenSSL BIGNUM · C · X.509 · SHA-256 | Complete |
 
 ---
 
@@ -72,6 +73,7 @@ Each lab includes tasks that go beyond the official SEED instructions:
 * **Lab 2:** 5 terminal parallel C DoS attack, IP in IP encapsulation against Strict RPF, Loose RPF bypass analysis
 * **Lab 3:** AAAA / IPv6 race condition exploit, decoupled Bailiwick bypass, DNSSEC configuration research
 * **Lab 4:** Full Kaminsky attack implementation with source port analysis and forged NS injection; DNSSEC defense verification
+* **Lab 5:** End to end manual verification of a live `www.reddit.com` X.509 certificate plus a Factoring Attack using FactorDB that recovers `d` from `(n, e)` alone
 
 ---
 
